@@ -19,6 +19,7 @@ def add(x, y):
     Return:
         Sum of x + y
     """
+    return x + y
     ### BEGIN YOUR CODE
     pass
     ### END YOUR CODE
