@@ -99,6 +99,37 @@ def softmax_loss(Z, y):
     ### END YOUR CODE
 
 
+def softmax(x):
+    """Compute the softmax function for each row of the input x.
+    It is crucial that this function is optimized for speed because
+    it will be used frequently in later code. 
+
+    Arguments:
+    x -- A D dimensional vector or N x D dimensional numpy matrix.
+    Return:
+    x -- You are allowed to modify x in-place
+    """
+    orige_shape = x.shape
+    
+    if len(x.shape) > 1:
+        #matrix
+        tmp = np.max(x,axis=1)
+        x  -= tmp.reshape((x.shape[0],1))
+        x   = np.exp(x)
+        tmp = np.sum(x,axis=1)
+        x  /= tmp.reshape((x.shape[0],1))
+    else:
+        #vector
+        tmp = np.max(x)
+        x  -= tmp
+        x   = np.exp(x)
+        tmp = np.sum(x)
+        x  /= tmp
+    
+    assert x.shape == orige_shape
+    return x
+
+
 def softmax_regression_epoch(X, y, theta, lr = 0.1, batch=100):
     """ Run a single epoch of SGD for softmax regression on the data, using
     the step size lr and specified batch size.  This function should modify the
@@ -118,7 +149,17 @@ def softmax_regression_epoch(X, y, theta, lr = 0.1, batch=100):
         None
     """
     ### BEGIN YOUR CODE
-    pass
+    k = theta.shape[1]
+    m = X.shape[0]
+
+    for i in range(0,m,batch):
+        X_batch = X[i:i+batch]
+        y_batch = y[i:i+batch]
+        y_pre   = np.dot(X_batch,theta)
+        Z = softmax(y_pre)
+        I = np.eye(k)[y_batch]
+        g = np.dot(X_batch.T,Z - I) / batch
+        theta[:,:] = theta[:,:] - lr * g
     ### END YOUR CODE
 
 
