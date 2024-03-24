@@ -186,10 +186,37 @@ def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
         None
     """
     ### BEGIN YOUR CODE
-    pass
+    num_examples = X.shape[0]
+    i = 0
+    
+    while i + batch <= num_examples:
+        inputs = X[i:i+batch]
+        labels = y[i:i+batch]
+        nn_epoch_batch(inputs, labels, W1, W2, lr)
+        i += batch
+    
+    if i < num_examples:
+        inputs = X[i:num_examples]
+        labels = y[i:num_examples]
+        nn_epoch_batch(inputs, labels, W1, W2, lr)
     ### END YOUR CODE
 
+def nn_epoch_batch(X, y, W1, W2, lr = 0.1, batch=100):
+    Z1 = np.maximum(X@W1,0) # [batch, d]
+    relu_mask = Z1 > 0
+    h = Z1@W2 # [batch, k]
+    eh = np.exp(h)
+    norm_eh = eh / eh.sum(axis=1, keepdims=True) # [batch, k]    
+    Iy_onehot = np.zeros((X.shape[0], W2.shape[1]), dtype=np.uint8)
+    np.put_along_axis(Iy_onehot, np.expand_dims(y, axis=1), 1, axis=1)
+    G2 = norm_eh - Iy_onehot # [batch, k]
+    G1 = relu_mask * (G2@W2.transpose()) # [batch, d]
 
+    gradient1 = X.transpose()@G1 / (X.shape[0])
+    gradient2 = Z1.transpose()@G2 / (X.shape[0])
+    
+    np.subtract(W1, gradient1*lr, out=W1)
+    np.subtract(W2, gradient2*lr, out=W2)
 
 ### CODE BELOW IS FOR ILLUSTRATION, YOU DO NOT NEED TO EDIT
 
